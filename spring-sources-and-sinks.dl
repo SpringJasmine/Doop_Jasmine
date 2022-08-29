@@ -196,28 +196,27 @@ LeakingSinkMethod("Log", "<org.slf4j.Logger: void info(org.slf4j.Marker,java.lan
 LeakingSinkMethod("Log", "<org.slf4j.Logger: void info(java.lang.String,java.lang.Object)>").
 
 #ifdef OPEN_PROGRAMS
+
 // Create context for entry point parameters
 mainAnalysis.configuration.RecordContextRequest(?ctx, ValueIdMacro(?to, ?ctype, DEFAULT_BREADCRUMB), ?to) :-
-  PossibleOpenProgramEntryPoint(_, ?meth),
-  FormalParam(_, ?meth, ?to),
-  mainAnalysis.ReachableContext(?ctx, ?meth),
-  Var_Type(?to, ?type),
-  ConcreteImplementations(?type, ?ctype).
+    EntryPointMethod(?meth),
+    FormalParam(_, ?meth, ?to),
+    mainAnalysis.ReachableContext(?ctx, ?meth),
+    Var_Type(?to, ?type),
+    mainAnalysis.TypeToConcreteImplementation(?type, ?ctype).
 
 // Introduce concrete taint values for entry point parameters
 // and mark their methods as taint transfer methods
 BaseToRetTaintTransferMethod(?dtoMeth),
 TaintedValueIntroduced(?declaringType, ?to, ?ctype, "default", ValueIdMacro(?to, ?ctype, DEFAULT_BREADCRUMB)),
 mainAnalysis.VarPointsTo(?hctx, ValueIdMacro(?to, ?ctype, DEFAULT_BREADCRUMB), ?ctx, ?to) :-
-  PossibleOpenProgramEntryPoint(?declaringType, ?meth),
-  FormalParam(_, ?meth, ?to),
-  mainAnalysis.ReachableContext(?ctx, ?meth),
-  Var_Type(?to, ?type),
-  ConcreteImplementations(?type, ?ctype),
-  mainAnalysis.configuration.RecordContextResponse(?ctx, ValueIdMacro(?to, ?ctype, DEFAULT_BREADCRUMB), ?to, ?hctx),
-  Method_DeclaringType(?dtoMeth, ?type).
+    EntryPointMethod(?meth),
+    Method_DeclaringType(?meth, ?declaringType),
+    FormalParam(_, ?meth, ?to),
+    mainAnalysis.ReachableContext(?ctx, ?meth),
+    Var_Type(?to, ?type),
+    mainAnalysis.TypeToConcreteImplementation(?type, ?ctype),
+    mainAnalysis.configuration.RecordContextResponse(?ctx, ValueIdMacro(?to, ?ctype, DEFAULT_BREADCRUMB), ?to, ?hctx),
+    Method_DeclaringType(?dtoMeth, ?type).
 
 #endif // OPEN_PROGRAMS
-
-.output SanitizationMethod
-.output TaintSourceMethod
